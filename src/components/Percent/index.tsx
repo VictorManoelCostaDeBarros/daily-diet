@@ -1,22 +1,15 @@
 import { TouchableOpacityProps } from "react-native";
 import { Container, PercentTypeStyleProps, PercentText, PercentDescription, Icon } from "./styles";
-import { useNavigation } from "@react-navigation/native";
 
 type Props = TouchableOpacityProps & {
   type: PercentTypeStyleProps
   percent: number
+  onNavigationStatistics: () => void
 }
 
-export function Percent({ type, percent, ...rest }: Props) {
-
-  const navigation = useNavigation()
-
-  function handleNavigationStatistics() {
-    navigation.navigate('statistics', { amountMeals: 109, healthyMeals: 99, unhealthyMeals: 10, sequenceFollowDiet: 22  })
-  }
-
+export function Percent({ type, percent, onNavigationStatistics, ...rest }: Props) {
   return (
-    <Container type={type} {...rest} onPress={handleNavigationStatistics}>
+    <Container type={type} {...rest} onPress={onNavigationStatistics}>
       <Icon 
         name="arrow-up-right"
         type={type}

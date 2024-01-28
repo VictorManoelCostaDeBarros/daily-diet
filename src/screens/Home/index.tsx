@@ -1,5 +1,5 @@
 import { Alert, FlatList, Text } from "react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { Header } from "@components/Header";
@@ -21,8 +21,52 @@ export function Home() {
   const [meals, setMeals] = useState<MealsType[]>([])
   const navigation = useNavigation()
 
+  const [mealsOnDiet, mealsOutDiet] = useMemo(() => {
+    return meals.reduce((prev, cur) => {
+      cur.meals.forEach(meal => {
+        if (meal.onDiet) {
+          prev[0] += 1;
+        } else {
+          prev[1] += 1;
+        }
+      });
+  
+      return prev; // Importante retornar o acumulador atualizado a cada iteração
+    }, [0, 0]);
+  }, [meals]);
+
+  const totalMeals = useMemo(() => {
+    return meals.reduce((prev, cur) => {
+      return prev += cur.meals.length
+    }, 0)
+  }, [meals])
+
+  const sequenceFollowDiet = useMemo(() => {
+    return meals.reduce((prev, cur) => {
+      let contadorAtual = 0;
+      
+      cur.meals.forEach(meal => {
+        if (meal.onDiet) {
+          contadorAtual += 1;
+        } else {
+          contadorAtual = 0; 
+        }
+  
+        if (contadorAtual > prev) {
+          prev = contadorAtual;
+        }
+      });
+  
+      return prev;
+    }, 0);
+  }, [meals]);
+
   function handleRegisterMeal() {
     navigation.navigate('register', {})
+  }
+
+  function handleNavigationStatistics() {
+    navigation.navigate('statistics', { amountMeals: totalMeals, healthyMeals: mealsOnDiet, unhealthyMeals: mealsOutDiet, sequenceFollowDiet: sequenceFollowDiet  })
   }
 
   async function getMeals() {
@@ -61,8 +105,9 @@ export function Home() {
       <Header />
 
       <Percent 
-        type="SECONDARY"
-        percent={50.04}
+        type={mealsOnDiet > mealsOutDiet ? "PRIMARY" : "SECONDARY"}
+        percent={mealsOnDiet / totalMeals * 100}
+        onNavigationStatistics={handleNavigationStatistics}
       />
 
       <AddMeal>
